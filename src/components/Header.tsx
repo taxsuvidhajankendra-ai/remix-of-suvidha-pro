@@ -1,4 +1,5 @@
-import { Bell, User, ChevronDown } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { Bell, User, ChevronDown, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -9,12 +10,29 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
+import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 
 export function Header() {
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const handleSignOut = async () => {
+    await signOut();
+    toast({
+      title: "Signed out",
+      description: "You have been successfully signed out.",
+    });
+    navigate("/auth");
+  };
+
+  const displayName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
+
   return (
     <header className="h-16 bg-card border-b border-border flex items-center justify-between px-6 sticky top-0 z-30">
       <div className="flex items-center gap-4 ml-12 lg:ml-0">
-        <h2 className="text-lg font-semibold text-foreground">Welcome back, Rajesh</h2>
+        <h2 className="text-lg font-semibold text-foreground">Welcome back, {displayName}</h2>
         <Badge variant="outline" className="bg-success/10 text-success border-success/20 hidden sm:flex">
           All Systems Operational
         </Badge>
@@ -57,8 +75,8 @@ export function Header() {
                 <User className="h-4 w-4 text-primary-foreground" />
               </div>
               <div className="hidden sm:block text-left">
-                <p className="text-sm font-medium">Rajesh Kumar</p>
-                <p className="text-xs text-muted-foreground">Administrator</p>
+                <p className="text-sm font-medium">{displayName}</p>
+                <p className="text-xs text-muted-foreground">{user?.email}</p>
               </div>
               <ChevronDown className="h-4 w-4 text-muted-foreground hidden sm:block" />
             </Button>
@@ -70,7 +88,13 @@ export function Header() {
             <DropdownMenuItem>Billing & Subscription</DropdownMenuItem>
             <DropdownMenuItem>Team Management</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-destructive">Sign Out</DropdownMenuItem>
+            <DropdownMenuItem 
+              className="text-destructive focus:text-destructive"
+              onClick={handleSignOut}
+            >
+              <LogOut className="h-4 w-4 mr-2" />
+              Sign Out
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
